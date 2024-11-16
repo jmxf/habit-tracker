@@ -24,6 +24,14 @@ server <- function(input, output, session) {
   
   observeEvent(input$save, {
     message("New entry saved!")
+    write.csv(
+      c(input$category, input$activity, input$dateTracked, input$activityNote),
+      "data/test_activities_tracked.csv",
+      append = TRUE,
+      sep = ",",
+      col.names = FALSE,
+      row.names = FALSE,
+    )
   })
 
 }
