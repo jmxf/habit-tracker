@@ -1,4 +1,5 @@
 library(shiny)
+library(readr)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -18,20 +19,22 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
   
+  activity <- reactive(
+    data.frame(input$category, input$activity, input$dateTracked, input$activityNote)
+  )
+  
   output$recordMessage <- renderText({
     paste0(c("You recorded: ", input$category))
   })
   
   observeEvent(input$save, {
-    message("New entry saved!")
-    write.csv(
-      c(input$category, input$activity, input$dateTracked, input$activityNote),
+    write_csv(
+      activity(),
       "data/test_activities_tracked.csv",
       append = TRUE,
-      sep = ",",
-      col.names = FALSE,
-      row.names = FALSE,
+      eol = "\r\n"
     )
+    message("New entry saved!")
   })
 
 }
