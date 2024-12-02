@@ -7,8 +7,8 @@ ui <- fluidPage(
     # Application title
     titlePanel("Habit Tracker"),
     
-    selectInput("category", "Category", choices = c("Symptoms", "Chores")),
-    selectInput("activity", "Activity", choices = c("Mood", "Headache", "Laundry")),
+    uiOutput("category"),
+    uiOutput("activity"),
     dateInput("dateTracked", "Date", format = "dd.mm.yyyy", weekstart = 1),
     textInput("activityNote", "Notes"),
     actionButton("save", "Save", class = "btn-primary"),
@@ -18,6 +18,16 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
+  
+  categoryOptions <- reactive({read_csv("data/category.csv")})
+  activityOptions <- reactive({read_csv("data/activity.csv")})
+  
+  output$category <- renderUI({
+    selectInput("category", "Category", categoryOptions()$category)
+  })
+  output$activity <- renderUI({
+    selectInput("activity", "Activity", activityOptions()$activity)
+  })
   
   activity <- reactive(
     data.frame(input$category, input$activity, input$dateTracked, input$activityNote)
