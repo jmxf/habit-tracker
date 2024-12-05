@@ -1,5 +1,6 @@
 library(shiny)
 library(readr)
+library(tidyverse)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -7,8 +8,8 @@ ui <- fluidPage(
     # Application title
     titlePanel("Habit Tracker"),
     
-    selectInput("category", "Category", choices = c("Symptoms", "Chores")),
-    selectInput("activity", "Activity", choices = c("Mood", "Headache", "Laundry")),
+    uiOutput("category"),
+    uiOutput("activity"),
     dateInput("dateTracked", "Date", format = "dd.mm.yyyy", weekstart = 1),
     textInput("activityNote", "Notes"),
     actionButton("save", "Save", class = "btn-primary"),
@@ -18,6 +19,25 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
+  
+  categoryOptions <- reactive({read_csv("data/category.csv")})
+  activityOptions <- reactive({read_csv("data/activity.csv")})
+  
+  output$category <- renderUI({
+    selectInput(
+      "category", "Category",
+      choices = c("Any", sort(categoryOptions()$category)),
+      selected = "Any"
+    )
+  })
+  output$activity <- renderUI({
+    if ("Any" %in% input$category) {
+      filteredOptions <- activityOptions()
+    } else {
+      filteredOptions <- activityOptions() %>% filter(category %in% input$category)
+    }
+    selectInput("activity", "Activity", filteredOptions$activity)
+  })
   
   activity <- reactive(
     data.frame(input$category, input$activity, input$dateTracked, input$activityNote)
