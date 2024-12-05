@@ -37,7 +37,13 @@ server <- function(input, output, session) {
     } else {
       filteredOptions <- activityOptions() %>% filter(category %in% input$category)
     }
-    selectInput("activity", "Activity", filteredOptions$activity)
+    selectizeInput(
+      "activity", "Activity",
+      choices = filteredOptions$activity,
+      options = list(
+        placeholder = "x"
+      )
+    )
   })
   
   activity <- reactive(
@@ -56,6 +62,24 @@ server <- function(input, output, session) {
       eol = "\r\n"
     )
     message("New entry saved!")
+  })
+  
+# Adding new Activities (and Categories)
+  observeEvent(input$addActivity, {
+    showModal(modalDialog(
+      textInput("newActivity", "Activity"),
+      selectizeInput(
+        "associatedCategory", "Category",
+        choices = c("Choose or add a category" = "", sort(categoryOptions()$category)),
+        options = list(
+          create = TRUE
+        )
+      ),
+      actionButton("saveNewActivity", "Save", class = "btn-primary"),
+      title = "Add a new Activity",
+      easyClose = TRUE,
+      footer = NULL
+    ))
   })
 
 }
