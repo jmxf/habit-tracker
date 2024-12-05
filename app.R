@@ -13,6 +13,7 @@ ui <- fluidPage(
     dateInput("dateTracked", "Date", format = "dd.mm.yyyy", weekstart = 1),
     textInput("activityNote", "Notes"),
     actionButton("save", "Save", class = "btn-primary"),
+    actionButton("addActivity", "New", class = "btn-info"),
     
     textOutput("recordMessage")
 )
