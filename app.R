@@ -81,32 +81,42 @@ server <- function(input, output, session) {
       actionButton("saveNewActivity", "Save", class = "btn-primary"),
       title = "Add a new Activity",
       easyClose = TRUE,
-      footer = observeEvent(input$newActivity, {
-        output$newActivityError <- renderText({errorMessage})
-      }),
-      observe({
-        if (input$newActivity == "" | input$associatedCategory == "") {
-          inputState <- "incomplete"
-        } else if (
-          match_df(activityOptions(), data.frame(input$associatedCategory, input$newActivity))
-        ) {
-          inputState <- "duplicate"
-        } else {
-          inputState <- "satis"
-        }
-        toggleState("saveNewActivity", inputState == "satis")
-        errorMessage <- ifelse(
-          inputState == "incomplete",
-          "Please complete all fields",
-          ifelse(
-            inputState == "duplicate",
-            "This activity already exists",
-            ""
-          )
-        )
-      })
+      footer = output$newActivityError <- renderText(inputState())
     ))
+    inputState <- reactive({
+      ifelse(
+        input$newActivity == "" | input$associatedCategory == "",
+        "incomplete",
+        ifelse(
+          input$newActivity == "TEST",
+          "test",
+          "satis"
+        )
+      )
+    })
+    observe({
+      toggleState("saveNewActivity", inputState() == "satis")
+    })
+    errorMessage <- reactive({
+      ifelse(
+        inputState() == "incomplete",
+        "Please complete all fields",
+        ifelse(
+          inputState() == "duplicate",
+          "This activity already exists",
+          ""
+        )
+      )
+    })
   })
+  
+
+#    } else if (
+#      match_df(activityOptions(), data.frame(input$associatedCategory, input$newActivity))
+#    ) {
+#      inputState <- "duplicate"
+  
+
 
 }
 
