@@ -81,15 +81,15 @@ server <- function(input, output, session) {
       actionButton("saveNewActivity", "Save", class = "btn-primary"),
       title = "Add a new Activity",
       easyClose = TRUE,
-      footer = output$newActivityError <- renderText(inputState())
+      footer = output$newActivityError <- renderText(errorMessage())
     ))
     inputState <- reactive({
       ifelse(
         input$newActivity == "" | input$associatedCategory == "",
         "incomplete",
         ifelse(
-          input$newActivity == "TEST",
-          "test",
+          nrow(match_df(activityOptions(), inputRow())) > 0,
+          "duplicate",
           "satis"
         )
       )
@@ -108,14 +108,25 @@ server <- function(input, output, session) {
         )
       )
     })
+    inputRow <- reactive({
+      data.frame(category = input$associatedCategory, activity = input$newActivity)
+    })
+    observeEvent(input$saveNewActivity, {
+      write_csv(
+        inputRow()$category,
+        "data/category.csv",
+        append = TRUE,
+        eol = "\r\n"
+      )
+      write_csv(
+        inputRow(),
+        "data/activity.csv",
+        append = TRUE,
+        eol = "\r\n"
+      )
+      message("New activity saved!")
+    })
   })
-  
-
-#    } else if (
-#      match_df(activityOptions(), data.frame(input$associatedCategory, input$newActivity))
-#    ) {
-#      inputState <- "duplicate"
-  
 
 
 }
