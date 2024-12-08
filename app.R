@@ -1,9 +1,12 @@
 library(shiny)
+library(shinyjs)
 library(readr)
 library(tidyverse)
+library(plyr)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
+  useShinyjs(),
 
     # Application title
     titlePanel("Habit Tracker"),
@@ -78,7 +81,30 @@ server <- function(input, output, session) {
       actionButton("saveNewActivity", "Save", class = "btn-primary"),
       title = "Add a new Activity",
       easyClose = TRUE,
-      footer = NULL
+      footer = observeEvent(input$newActivity, {
+        output$newActivityError <- renderText({errorMessage})
+      }),
+      observe({
+        if (input$newActivity == "" | input$associatedCategory == "") {
+          inputState <- "incomplete"
+        } else if (
+          match_df(activityOptions(), data.frame(input$associatedCategory, input$newActivity))
+        ) {
+          inputState <- "duplicate"
+        } else {
+          inputState <- "satis"
+        }
+        toggleState("saveNewActivity", inputState == "satis")
+        errorMessage <- ifelse(
+          inputState == "incomplete",
+          "Please complete all fields",
+          ifelse(
+            inputState == "duplicate",
+            "This activity already exists",
+            ""
+          )
+        )
+      })
     ))
   })
 
