@@ -108,34 +108,34 @@ server <- function(input, output, session) {
         )
       )
     })
-    inputRow <- reactive({
-      data.frame(category = input$associatedCategory, activity = input$newActivity)
-    })
-    observeEvent(input$saveNewActivity, {
-      if (!(input$associatedCategory %in% categoryOptions()$category)) {
-        write_csv(
-          inputRow()["category"],
-          "data/category.csv",
-          append = TRUE,
-          eol = "\r\n"
-        )
-      }
+  })
+  inputRow <- reactive({
+    data.frame(category = input$associatedCategory, activity = input$newActivity)
+  })
+  observeEvent(input$saveNewActivity, {
+    if (!(input$associatedCategory %in% categoryOptions()$category)) {
       write_csv(
-        inputRow(),
-        "data/activity.csv",
+        inputRow()["category"],
+        "data/category.csv",
         append = TRUE,
         eol = "\r\n"
       )
-      message("New activity saved!")
-      removeModal()
-      showNotification(
-        ui = "New activity saved successfully!",
-        duration = 5,
-        closeButton = FALSE,
-        id = "savedSuccessfully",
-        type = "message"
-      )
-    })
+    }
+    write_csv(
+      inputRow(),
+      "data/activity.csv",
+      append = TRUE,
+      eol = "\r\n"
+    )
+    message("New activity saved!")
+    removeModal()
+    showNotification(
+      ui = "New activity saved successfully!",
+      duration = 3,
+      closeButton = FALSE,
+      id = "savedSuccessfully",
+      type = "message"
+    )
   })
 
 
