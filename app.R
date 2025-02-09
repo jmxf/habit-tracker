@@ -127,6 +127,14 @@ server <- function(input, output, session) {
         eol = "\r\n"
       )
       message("New activity saved!")
+      removeModal()
+      showNotification(
+        ui = "New activity saved successfully!",
+        duration = 5,
+        closeButton = FALSE,
+        id = "savedSuccessfully",
+        type = "message"
+      )
     })
   })
 
