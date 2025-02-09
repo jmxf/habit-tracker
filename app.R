@@ -112,7 +112,7 @@ server <- function(input, output, session) {
       data.frame(category = input$associatedCategory, activity = input$newActivity)
     })
     observeEvent(input$saveNewActivity, {
-      if (!(input$associatedCategory %in% categoryOptions())) {
+      if (!(input$associatedCategory %in% categoryOptions()$category)) {
         write_csv(
           inputRow()["category"],
           "data/category.csv",
