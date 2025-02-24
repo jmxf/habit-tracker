@@ -24,8 +24,8 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
   
-  categoryOptions <- reactive({read_csv("data/category.csv")})
-  activityOptions <- reactive({read_csv("data/activity.csv")})
+  categoryOptions <- reactiveFileReader(1000, session, "data/category.csv", read_csv)
+  activityOptions <- reactiveFileReader(1000, session, "data/activity.csv", read_csv)
   
   output$category <- renderUI({
     selectInput(
@@ -42,7 +42,7 @@ server <- function(input, output, session) {
     }
     selectizeInput(
       "activity", "Activity",
-      choices = sort(filteredOptions()$activity),
+      choices = sort(filteredOptions$activity),
       options = list(
         placeholder = "x"
       )
