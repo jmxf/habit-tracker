@@ -13,14 +13,42 @@ ui <- fluidPage(
     # Application title
     titlePanel("Habit Tracker"),
     
-    uiOutput("category"),
-    uiOutput("activity"),
-    dateInput("dateTracked", "Date", format = "dd.mm.yyyy", weekstart = 1),
-    textInput("activityNote", "Notes"),
-    actionButton("save", "Save", class = "btn-primary"),
-    actionButton("addActivity", "New", class = "btn-info"),
+  fluidRow(
+    column(6,
+       fluidRow(
+         column(3,
+                uiOutput("category")
+         ),
+         column(3,
+                uiOutput("activity")
+         )
+       ),
+       fluidRow(
+         column(3,
+                dateInput("dateTracked", "Date", format = "dd.mm.yyyy", weekstart = 1)
+         ),
+         column(3, 
+                textAreaInput("activityNote", "Notes"),
+         )
+       ),
+       fluidRow(
+         column(3,
+                actionButton("save", "Save", class = "btn-primary"),
+                actionButton("addActivity", "New", class = "btn-info")
+         )
+       )
+    ),
+    column(3,
+      textOutput(
+        "lastRecorded",
+        ##container = 
+      )
+    )
+  )
+  
     
-    textOutput("recordMessage")
+    
+    
 )
 
 # Define server logic required to draw a histogram
@@ -55,10 +83,6 @@ server <- function(input, output, session) {
     data.frame(input$category, input$activity, input$dateTracked, input$activityNote)
   )
   
-  output$recordMessage <- renderText({
-    paste0(c("You recorded: ", input$category))
-  })
-  
   observeEvent(input$save, {
     write_csv(
       activity(),
@@ -67,7 +91,13 @@ server <- function(input, output, session) {
       eol = "\r\n"
     )
     message("New entry saved!")
+    output$lastRecorded <- renderText(
+      paste0(
+        "Template text for last recorded activity."
+      )
+    )
   })
+  
   
 # Adding new Activities (and Categories)
   observeEvent(input$addActivity, {
