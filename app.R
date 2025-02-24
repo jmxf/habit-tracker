@@ -36,11 +36,12 @@ server <- function(input, output, session) {
   })
   output$activity <- renderUI({
     if ("Any" %in% input$category) {
+      filteredOptions <- activityOptions()
     } else {
+      filteredOptions <- activityOptions() %>% filter(category %in% input$category)
     }
     selectizeInput(
       "activity", "Activity",
-      choices = filteredOptions$activity,
       choices = sort(filteredOptions()$activity),
       options = list(
         placeholder = "x"
