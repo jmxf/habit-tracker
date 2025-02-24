@@ -1,5 +1,6 @@
 library(shiny)
 library(shinyjs)
+library(shinythemes)
 library(readr)
 library(tidyverse)
 library(plyr)
@@ -7,6 +8,7 @@ library(plyr)
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   useShinyjs(),
+  theme = shinytheme("sandstone"),
 
     # Application title
     titlePanel("Habit Tracker"),
