@@ -1,9 +1,12 @@
 library(shiny)
+library(shinyjs)
 library(readr)
 library(tidyverse)
+library(plyr)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
+  useShinyjs(),
 
     # Application title
     titlePanel("Habit Tracker"),
@@ -13,6 +16,7 @@ ui <- fluidPage(
     dateInput("dateTracked", "Date", format = "dd.mm.yyyy", weekstart = 1),
     textInput("activityNote", "Notes"),
     actionButton("save", "Save", class = "btn-primary"),
+    actionButton("addActivity", "New", class = "btn-info"),
     
     textOutput("recordMessage")
 )
@@ -20,8 +24,8 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
   
-  categoryOptions <- reactive({read_csv("data/category.csv")})
-  activityOptions <- reactive({read_csv("data/activity.csv")})
+  categoryOptions <- reactiveFileReader(1000, session, "data/category.csv", read_csv)
+  activityOptions <- reactiveFileReader(1000, session, "data/activity.csv", read_csv)
   
   output$category <- renderUI({
     selectInput(
@@ -36,7 +40,13 @@ server <- function(input, output, session) {
     } else {
       filteredOptions <- activityOptions() %>% filter(category %in% input$category)
     }
-    selectInput("activity", "Activity", filteredOptions$activity)
+    selectizeInput(
+      "activity", "Activity",
+      choices = sort(filteredOptions$activity),
+      options = list(
+        placeholder = "x"
+      )
+    )
   })
   
   activity <- reactive(
@@ -56,6 +66,78 @@ server <- function(input, output, session) {
     )
     message("New entry saved!")
   })
+  
+# Adding new Activities (and Categories)
+  observeEvent(input$addActivity, {
+    showModal(modalDialog(
+      textInput("newActivity", "Activity"),
+      selectizeInput(
+        "associatedCategory", "Category",
+        choices = c("Choose or add a category" = "", sort(categoryOptions()$category)),
+        options = list(
+          create = TRUE
+        )
+      ),
+      actionButton("saveNewActivity", "Save", class = "btn-primary"),
+      title = "Add a new Activity",
+      easyClose = TRUE,
+      footer = output$newActivityError <- renderText(errorMessage())
+    ))
+    inputState <- reactive({
+      ifelse(
+        input$newActivity == "" | input$associatedCategory == "",
+        "incomplete",
+        ifelse(
+          nrow(match_df(activityOptions(), inputRow())) > 0,
+          "duplicate",
+          "satis"
+        )
+      )
+    })
+    observe({
+      toggleState("saveNewActivity", inputState() == "satis")
+    })
+    errorMessage <- reactive({
+      ifelse(
+        inputState() == "incomplete",
+        "Please complete all fields",
+        ifelse(
+          inputState() == "duplicate",
+          "This activity already exists",
+          ""
+        )
+      )
+    })
+  })
+  inputRow <- reactive({
+    data.frame(category = input$associatedCategory, activity = input$newActivity)
+  })
+  observeEvent(input$saveNewActivity, {
+    if (!(input$associatedCategory %in% categoryOptions()$category)) {
+      write_csv(
+        inputRow()["category"],
+        "data/category.csv",
+        append = TRUE,
+        eol = "\r\n"
+      )
+    }
+    write_csv(
+      inputRow(),
+      "data/activity.csv",
+      append = TRUE,
+      eol = "\r\n"
+    )
+    message("New activity saved!")
+    removeModal()
+    showNotification(
+      ui = "New activity saved successfully!",
+      duration = 3,
+      closeButton = FALSE,
+      id = "savedSuccessfully",
+      type = "message"
+    )
+  })
+
 
 }
 
